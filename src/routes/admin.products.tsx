@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const CATEGORIES = ["Journals", "Writing", "Cards", "Paper", "Sealing"] as const;
+const CATEGORIES = ["Journals", "Writing", "Cards", "pen", "Paper", "Sealing"] as const;
 const TRADE_TYPES = [
   { value: "imported", label: "Imported Product" },
   { value: "exported", label: "Exported Product" },
