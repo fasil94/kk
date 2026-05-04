@@ -37,13 +37,10 @@ export function useProducts() {
   });
 
   useEffect(() => {
-<<<<<<< HEAD
-    const channel = supabase.channel(`products-realtime-${Math.random().toString(36).slice(2)}`);
-    channel
-=======
+    // Unique channel name to prevent conflicts during re-renders
+    const channelId = `products-realtime-${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel("products-realtime")
->>>>>>> 8d1615e0a913123866bffa3bcbdc97952777ee8f
+      .channel(channelId)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "products" },
@@ -52,6 +49,7 @@ export function useProducts() {
         },
       )
       .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
     };
