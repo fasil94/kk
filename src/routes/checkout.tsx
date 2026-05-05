@@ -88,50 +88,96 @@ function CheckoutPage() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setSubmitting(true);
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            product_id: i.product.id,
-            quantity: i.quantity,
-          })),
-          shipping: {
-            name: form.name,
-            email: form.email,
-            address: form.address,
-            city: form.city,
-            postal_code: form.postal_code,
-            country: form.country,
-          },
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Order failed" }));
-        throw new Error(err.error || "Order failed");
-      }
-      clear();
-      toast.success("Order placed — thank you.");
-      navigate({ to: "/dashboard" });
-    } catch (err) {
-      console.error(err);
-      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!user) return;
+  //   setSubmitting(true);
+  //   try {
+  //     const { data: sessionData } = await supabase.auth.getSession();
+  //     const token = sessionData.session?.access_token;
+  //     if (!token) throw new Error("Not authenticated");
+  //     const res = await fetch("/api/orders", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         items: items.map((i) => ({
+  //           product_id: i.product.id,
+  //           quantity: i.quantity,
+  //         })),
+  //         shipping: {
+  //           name: form.name,
+  //           email: form.email,
+  //           address: form.address,
+  //           city: form.city,
+  //           postal_code: form.postal_code,
+  //           country: form.country,
+  //         },
+  //       }),
+  //     });
+  //     if (!res.ok) {
+  //       const err = await res.json().catch(() => ({ error: "Order failed" }));
+  //       throw new Error(err.error || "Order failed");
+  //     }
+  //     clear();
+  //     toast.success("Order placed — thank you.");
+  //     navigate({ to: "/dashboard" });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSubmitting(true);
+
+  try {
+    // 1. ትዕዛዙን በ 'orders' ቴብል ውስጥ ማስገባት
+    const { data: order, error: oErr } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        subtotal: subtotal,
+        shipping: shipping,
+        total: total,
+        shipping_name: form.name,
+        shipping_email: form.email,
+        shipping_address: form.address,
+        shipping_city: form.city,
+        shipping_postal_code: form.postal_code,
+        shipping_country: form.country,
+        status: "paid",
+      })
+      .select()
+      .single();
+
+    if (oErr) throw new Error("ትዕዛዙ አልተሳካም: " + oErr.message);
+
+    // 2. እቃዎቹን በ 'order_items' ቴብል ውስጥ ማስገባት
+    const orderItems = items.map((i) => ({
+      order_id: order.id,
+      product_id: i.product.id,
+      unit_price: i.product.price,
+      quantity: i.quantity,
+    }));
+
+    const { error: iErr } = await supabase.from("order_items").insert(orderItems);
+    if (iErr) throw iErr;
+
+    clear();
+    toast.success("ትዕዛዝዎ ተልኳል!");
+    navigate({ to: "/dashboard" });
+  } catch (err: any) {
+    toast.error(err.message);
+  } finally {
+    setSubmitting(false);
+  }
+};
   return (
     <SiteLayout>
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-24 md:pt-24">
