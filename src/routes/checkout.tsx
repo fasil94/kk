@@ -171,10 +171,16 @@ const handleSubmit = async (e: React.FormEvent) => {
       clear();
       toast.success("Order placed — thank you.");
       navigate({ to: "/dashboard" });
+    
     } catch (err) {
-      console.error(err);
-      toast.error(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
+  console.error("FULL ERROR DETAILS:", err); // ይሄኛው በ Console ላይ ዝርዝሩን ያሳያል
+  toast.error(err instanceof Error ? err.message : "Something went wrong.");
+}
+    // } catch (err) {
+    //   console.error(err);
+    //   toast.error(err instanceof Error ? err.message : "Something went wrong.");
+    // }
+    finally {
       setSubmitting(false);
     }
   };
