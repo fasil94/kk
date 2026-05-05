@@ -88,50 +88,96 @@ function CheckoutPage() {
     );
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ // const handleSubmit = async (e: React.FormEvent) => {
+    //e.preventDefault();
+   // if (!user) return;
+    // setSubmitting(true);
+    // try {
+    //   const { data: sessionData } = await supabase.auth.getSession();
+    //   const token = sessionData.session?.access_token;
+    //   if (!token) throw new Error("Not authenticated");
+    //   const res = await fetch("/api/orders", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${token}`,
+    //     },
+  //       body: JSON.stringify({
+  //         items: items.map((i) => ({
+  //           product_id: i.product.id,
+  //           quantity: i.quantity,
+  //         })),
+  //         shipping: {
+  //           name: form.name,
+  //           email: form.email,
+  //           address: form.address,
+  //           city: form.city,
+  //           postal_code: form.postal_code,
+  //           country: form.country,
+  //         },
+  //       }),
+  //     });
+  //     if (!res.ok) {
+  //       const err = await res.json().catch(() => ({ error: "Order failed" }));
+  //       throw new Error(err.error || "Order failed");
+  //     }
+  //     clear();
+  //     toast.success("Order placed — thank you.");
+  //     navigate({ to: "/dashboard" });
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setSubmitting(true);
+
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: items.map((i) => ({
-            product_id: i.product.id,
-            quantity: i.quantity,
-          })),
-          shipping: {
-            name: form.name,
-            email: form.email,
-            address: form.address,
-            city: form.city,
-            postal_code: form.postal_code,
-            country: form.country,
-          },
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Order failed" }));
-        throw new Error(err.error || "Order failed");
-      }
+      // 1. ትዕዛዙን (Order) ወደ 'orders' table ማስገባት
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders') // በ Supabase ላይ የሰንጠረዡ ስም 'orders' መሆኑን አረጋግጥ
+        .insert([
+          {
+            user_id: user.id,
+            total_amount: total,
+            status: 'pending',
+            shipping_address: form, // የፎርሙን ዳታ ሙሉ በሙሉ ያስገባል
+          }
+        ])
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // 2. እያንዳንዱን እቃ (Items) ወደ 'order_items' table ማስገባት
+      const orderItems = items.map((i) => ({
+        order_id: orderData.id,
+        product_id: i.product.id,
+        quantity: i.quantity,
+        price: i.product.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // ስራው ሲሳካ
       clear();
       toast.success("Order placed — thank you.");
       navigate({ to: "/dashboard" });
     } catch (err) {
       console.error(err);
-      toast.error(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <SiteLayout>
       <section className="mx-auto max-w-6xl px-6 pt-16 pb-24 md:pt-24">
