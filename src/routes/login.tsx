@@ -71,9 +71,9 @@ function LoginPage() {
           </Button>
         </form>
         <div className="mt-6 flex items-center justify-between text-sm">
-          <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
+          {/* <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
             Forgot password?
-          </Link>
+          </Link> */}
           <Link to="/signup" className="text-primary underline-offset-4 hover:underline">
             Create account
           </Link>
