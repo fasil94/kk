@@ -162,6 +162,7 @@ function CheckoutPage() {
     const orderItems = items.map((i) => ({
       order_id: order.id,
       product_id: i.product.id,
+      product_name: i.product.name,
       unit_price: i.product.price,
       quantity: i.quantity,
     }));
