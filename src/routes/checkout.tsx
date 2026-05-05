@@ -162,9 +162,14 @@ function CheckoutPage() {
     const orderItems = items.map((i) => ({
       order_id: order.id,
       product_id: i.product.id,
+      // product_name: i.product.name,
+      // unit_price: i.product.price,
+      // quantity: i.quantity,
       product_name: i.product.name,
-      unit_price: i.product.price,
+      product_image:i.product.image,
+      unit_price: Number(i.product.price),
       quantity: i.quantity,
+      
     }));
 
     const { error: iErr } = await supabase.from("order_items").insert(orderItems);
