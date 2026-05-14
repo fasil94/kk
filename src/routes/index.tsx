@@ -4,7 +4,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
-import heroImg from "@/assets/hero-cargo-ship.jpg";
+import heroImg from "@/assets/bg.jfif";
 
 export const Route = createFileRoute("/")({
   head: () => ({
